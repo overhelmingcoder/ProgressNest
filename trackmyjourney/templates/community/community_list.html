@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Communities - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Discover Communities</h2>
+            <p class="text-muted">Find and join communities that match your interests</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="#" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Create Community
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="Search communities..." value="{{ request.GET.search }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for value, label in view.model.CATEGORY_CHOICES %}
+                            <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Communities Grid -->
+    <div class="row">
+        {% for community in communities %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    {% if community.banner %}
+                        <img src="{{ community.banner.url }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center mb-3">
+                            {% if community.logo %}
+                                <img src="{{ community.logo.url }}" class="rounded me-2" width="40" height="40">
+                            {% else %}
+                                <div class="bg-primary rounded d-flex align-items-center justify-content-center me-2" 
+                                     style="width: 40px; height: 40px;">
+                                    <span class="text-white fw-bold">{{ community.name|first }}</span>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h6 class="card-title mb-0">{{ community.name }}</h6>
+                                <small class="text-muted">{{ community.get_category_display }}</small>
+                            </div>
+                        </div>
+                        
+                        <p class="card-text flex-grow-1">{{ community.description|truncatewords:20 }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-users me-1"></i>{{ community.member_count }} members
+                            </small>
+                            {% if community.is_featured %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-star me-1"></i>Featured
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{{ community.get_absolute_url }}" class="btn btn-primary">
+                            View Community
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No communities found</h5>
+                <p class="text-muted">Try adjusting your search criteria or create a new community.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Communities pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}

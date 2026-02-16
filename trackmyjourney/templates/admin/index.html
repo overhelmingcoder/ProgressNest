@@ -1,0 +1,203 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card h3 {
+            font-size: 2.5rem;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .stat-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .stat-card i {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+        .quick-actions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .quick-actions h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .action-btn {
+            display: block;
+            padding: 15px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .action-btn:hover {
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .action-btn i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h1>TrackMyJourney Dashboard</h1>
+
+<!-- Statistics Cards -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <i class="fas fa-users"></i>
+        <h3>{{ total_users|default:0 }}</h3>
+        <p>Total Users</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <i class="fas fa-bullseye"></i>
+        <h3>{{ total_goals|default:0 }}</h3>
+        <p>Total Goals</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+        <i class="fas fa-check-circle"></i>
+        <h3>{{ completed_goals|default:0 }}</h3>
+        <p>Completed Goals</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+        <i class="fas fa-trophy"></i>
+        <h3>{{ total_achievements|default:0 }}</h3>
+        <p>Achievements</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+        <i class="fas fa-blog"></i>
+        <h3>{{ total_posts|default:0 }}</h3>
+        <p>Blog Posts</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333;">
+        <i class="fas fa-download"></i>
+        <h3>{{ total_resources|default:0 }}</h3>
+        <p>Resources</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+        <i class="fas fa-book"></i>
+        <h3>{{ total_books|default:0 }}</h3>
+        <p>Books</p>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #a8caba 0%, #5d4e75 100%);">
+        <i class="fas fa-users"></i>
+        <h3>{{ total_groups|default:0 }}</h3>
+        <p>Groups</p>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+    <div class="action-grid">
+        <a href="{% url 'admin:accounts_user_changelist' %}" class="action-btn">
+            <i class="fas fa-users"></i>
+            Manage Users
+        </a>
+        <a href="{% url 'admin:goals_goal_changelist' %}" class="action-btn">
+            <i class="fas fa-bullseye"></i>
+            Manage Goals
+        </a>
+        <a href="{% url 'admin:achievements_achievement_changelist' %}" class="action-btn">
+            <i class="fas fa-trophy"></i>
+            Manage Achievements
+        </a>
+        <a href="{% url 'admin:blog_blogpost_changelist' %}" class="action-btn">
+            <i class="fas fa-blog"></i>
+            Manage Blog Posts
+        </a>
+        <a href="{% url 'admin:resources_resource_changelist' %}" class="action-btn">
+            <i class="fas fa-download"></i>
+            Manage Resources
+        </a>
+        <a href="{% url 'admin:books_book_changelist' %}" class="action-btn">
+            <i class="fas fa-book"></i>
+            Manage Books
+        </a>
+        <a href="{% url 'admin:groups_group_changelist' %}" class="action-btn">
+            <i class="fas fa-users"></i>
+            Manage Groups
+        </a>
+        <a href="{% url 'admin:community_community_changelist' %}" class="action-btn">
+            <i class="fas fa-globe"></i>
+            Manage Communities
+        </a>
+    </div>
+</div>
+
+<!-- Default Django Admin Content -->
+{% if app_list %}
+    {% for app in app_list %}
+        <div class="app-{{ app.app_label }} module">
+            <table>
+                <caption>
+                    <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+                </caption>
+                {% for model in app.models %}
+                    <tr class="model-{{ model.object_name|lower }}">
+                        {% if model.admin_url %}
+                            <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+                        {% else %}
+                            <th scope="row">{{ model.name }}</th>
+                        {% endif %}
+
+                        {% if model.add_url %}
+                            <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
+                        {% else %}
+                            <td>&nbsp;</td>
+                        {% endif %}
+
+                        {% if model.admin_url %}
+                            {% if model.view_only %}
+                                <td><a href="{{ model.admin_url }}" class="viewlink">{% trans 'View' %}</a></td>
+                            {% else %}
+                                <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+                            {% endif %}
+                        {% else %}
+                            <td>&nbsp;</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>{% trans "You don't have permission to view or edit anything." %}</p>
+{% endif %}
+{% endblock %}

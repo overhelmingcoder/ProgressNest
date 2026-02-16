@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Groups - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-users me-2"></i>Groups</h1>
+        {% if user.is_authenticated %}
+            <div class="btn-group">
+                <a href="{% url 'groups:create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Group
+                </a>
+                <a href="{% url 'groups:my_groups' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-user me-2"></i>My Groups
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for value, label in category_choices %}
+                            <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" placeholder="Search groups..." value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Featured Groups -->
+    {% if featured_groups and not request.GET.search and not request.GET.category %}
+        <div class="row mb-5">
+            <div class="col-12">
+                <h3 class="mb-3">Featured Groups</h3>
+                <div class="row">
+                    {% for group in featured_groups %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-warning">
+                                {% if group.cover_image %}
+                                    <img src="{{ group.cover_image.url }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="{{ group.get_absolute_url }}" class="text-decoration-none">{{ group.name }}</a>
+                                    </h6>
+                                    <p class="card-text small">{{ group.description|truncatewords:10 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">{{ group.get_category_display }}</span>
+                                        <small class="text-muted">{{ group.member_count }} members</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Groups Grid -->
+    <div class="row">
+        {% for group in groups %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    {% if group.cover_image %}
+                        <img src="{{ group.cover_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="d-flex align-items-start mb-2">
+                            {% if group.logo %}
+                                <img src="{{ group.logo.url }}" class="rounded me-2" width="40" height="40">
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <h5 class="card-title">
+                                    <a href="{{ group.get_absolute_url }}" class="text-decoration-none">{{ group.name }}</a>
+                                </h5>
+                                <span class="badge bg-primary">{{ group.get_category_display }}</span>
+                            </div>
+                        </div>
+                        
+                        <p class="card-text">{{ group.description|truncatewords:15 }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted me-2">
+                                    <i class="fas fa-users me-1"></i>{{ group.member_count }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-comments me-1"></i>{{ group.post_count }}
+                                </small>
+                            </div>
+                            <span class="badge bg-{% if group.privacy == 'public' %}success{% elif group.privacy == 'private' %}danger{% else %}warning{% endif %}">
+                                {{ group.get_privacy_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                    <h3>No Groups Found</h3>
+                    <p class="text-muted">
+                        {% if request.GET.search or request.GET.category %}
+                            No groups match your search criteria.
+                        {% else %}
+                            No groups have been created yet.
+                        {% endif %}
+                    </p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'groups:create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create First Group
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

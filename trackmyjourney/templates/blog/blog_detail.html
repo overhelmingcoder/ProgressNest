@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <!-- Blog Header Section -->
+      <header class="text-center mb-5">
+        <h1 class="fw-bold display-4 mb-3 blog-title">{{ post.title }}</h1>
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 text-muted mb-4">
+          <span class="d-flex align-items-center">
+            <i class="fas fa-user-circle me-2"></i>By <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+          </span>
+          <span class="d-flex align-items-center">
+            <i class="fas fa-calendar-alt me-2"></i>{{ post.published_at|date:"F j, Y" }}
+          </span>
+          <span class="d-flex align-items-center">
+            <i class="fas fa-eye me-2"></i>{{ post.views }} views
+          </span>
+          <span class="d-flex align-items-center">
+            <i class="fas fa-clock me-2"></i>{{ post.reading_time }} min read
+          </span>
+        </div>
+        <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+          {% for tag in post.tags.all %}
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% if post.featured_image %}
+          <img src="{{ post.featured_image.url }}" class="img-fluid rounded-4 shadow-lg mb-4 blog-featured-image" alt="{{ post.title }}">
+        {% else %}
+          <img src="/placeholder.svg?height=400&width=800" class="img-fluid rounded-4 shadow-lg mb-4 blog-featured-image" alt="Placeholder image">
+        {% endif %}
+      </header>
+
+      <!-- Blog Content -->
+      <article class="blog-content bg-white rounded-4 shadow-sm p-4 p-md-5 mb-5">
+        <div class="fs-5 lh-lg text-dark-emphasis">
+          {{ post.content|linebreaks }}
+        </div>
+      </article>
+
+      <!-- Actions: Like, Bookmark -->
+      <div class="d-flex justify-content-center gap-4 mb-5">
+        <a href="{% url 'blog:like' post.slug %}" class="btn btn-outline-danger btn-lg rounded-pill px-4 py-2 like-btn {% if user in post.likes.all %}text-danger{% else %}text-muted{% endif %}">
+          <i class="fas fa-heart me-2"></i>Like (<span class="like-count">{{ post.total_likes }}</span>)
+        </a>
+        <a href="{% url 'blog:bookmark' post.slug %}" class="btn btn-outline-warning btn-lg rounded-pill px-4 py-2 bookmark-btn {% if user in post.bookmarks.all %}text-warning{% else %}text-muted{% endif %}">
+          <i class="fas fa-bookmark me-2"></i>Bookmark (<span class="bookmark-count">{{ post.total_bookmarks }}</span>)
+        </a>
+      </div>
+
+      <!-- Related Posts -->
+      {% if related_posts %}
+      <section class="mb-5">
+        <h3 class="fw-bold mb-4 text-center">More Like This</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          {% for related in related_posts %}
+            <div class="col">
+              <div class="card h-100 shadow-sm border-0 blog-post-card">
+                <div class="card-body d-flex flex-column">
+                  <h6 class="card-title fw-bold mb-2">
+                    <a href="{% url 'blog:detail' related.slug %}" class="text-decoration-none text-dark">{{ related.title|truncatechars:50 }}</a>
+                  </h6>
+                  <p class="card-text text-muted small mb-3">{{ related.published_at|date:"M d, Y" }}</p>
+                  <a href="{% url 'blog:detail' related.slug %}" class="btn btn-sm btn-outline-primary mt-auto align-self-start rounded-pill">Read More</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- Comments Section -->
+      <section class="mb-5">
+        <h3 class="fw-bold mb-4 text-center">Comments ({{ comments.count }})</h3>
+        <div class="comments-list bg-white rounded-4 shadow-sm p-4 p-md-5">
+          {% for comment in comments %}
+            <div class="comment-item mb-4 pb-4 border-bottom">
+              <div class="d-flex align-items-center mb-2">
+                <div class="avatar-placeholder me-3 rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                  <i class="fas fa-user text-muted"></i>
+                </div>
+                <div>
+                  <p class="fw-bold mb-0">{{ comment.author.get_full_name|default:comment.author.username }}</p>
+                  <span class="text-muted small">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+              </div>
+              <div class="comment-content bg-light rounded p-3 ms-5">
+                <p class="mb-0">{{ comment.content }}</p>
+              </div>
+              <div class="d-flex align-items-center mt-2 ms-5">
+                <a href="{% url 'blog:like_comment' comment.pk %}" class="btn btn-link btn-sm text-decoration-none like-comment-btn {% if user in comment.likes.all %}text-danger{% else %}text-muted{% endif %}">
+                  <i class="fas fa-heart me-1"></i>Like (<span class="comment-like-count">{{ comment.total_likes }}</span>)
+                </a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center py-4">
+              <p class="text-muted lead">No comments yet. Be the first to share your thoughts!</p>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Add Comment Form -->
+      {% if user.is_authenticated %}
+      <section class="mb-5">
+        <h3 class="fw-bold mb-4 text-center">Add Your Comment</h3>
+        <div class="comment-form-card bg-white rounded-4 shadow-sm p-4 p-md-5">
+          {% if not post.allow_comments %}
+            <div class="alert alert-warning text-center" role="alert">
+              Comments are disabled for this post.
+            </div>
+          {% else %}
+            <form method="post" action="{% url 'blog:add_comment' post.slug %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="{{ comment_form.content.id_for_label }}" class="form-label fw-bold">Your Comment</label>
+                {{ comment_form.content }}
+                {% if comment_form.content.errors %}
+                  <div class="text-danger small mt-1">{{ comment_form.content.errors }}</div>
+                {% endif %}
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 py-2">
+                <i class="fas fa-paper-plane me-2"></i>Submit Comment
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </section>
+      {% else %}
+        <div class="text-center py-5">
+          <p class="lead text-muted">
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg rounded-pill">
+              <i class="fas fa-sign-in-alt me-2"></i>Login to comment
+            </a>
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle like/bookmark via AJAX
+        function handleAction(url, element, countSelector, activeClass, inactiveClass) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked !== undefined) {
+                    element.querySelector(countSelector).textContent = data.total_likes;
+                    if (data.liked) {
+                        element.classList.add(activeClass);
+                        element.classList.remove(inactiveClass);
+                    } else {
+                        element.classList.remove(activeClass);
+                        element.classList.add(inactiveClass);
+                    }
+                } else if (data.bookmarked !== undefined) {
+                    element.querySelector(countSelector).textContent = data.total_bookmarks;
+                    if (data.bookmarked) {
+                        element.classList.add(activeClass);
+                        element.classList.remove(inactiveClass);
+                    } else {
+                        element.classList.remove(activeClass);
+                        element.classList.add(inactiveClass);
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.href;
+                handleAction(url, this, '.like-count', 'text-danger', 'text-muted');
+            });
+        });
+
+        document.querySelectorAll('.bookmark-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.href;
+                handleAction(url, this, '.bookmark-count', 'text-warning', 'text-muted');
+            });
+        });
+
+        document.querySelectorAll('.like-comment-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.href;
+                handleAction(url, this, '.comment-like-count', 'text-danger', 'text-muted');
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Books Library - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-book me-2"></i>Books Library</h1>
+        {% if user.is_authenticated %}
+            <div class="btn-group">
+                <a href="{% url 'books:create' %}" class="btn btn-primary">
+                    <i class="fas fa-upload me-2"></i>Upload Book
+                </a>
+                <a href="{% url 'books:my_books' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-user me-2"></i>My Books
+                </a>
+                <a href="{% url 'books:reading_list' %}" class="btn btn-outline-success">
+                    <i class="fas fa-list me-2"></i>Reading List
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="format" class="form-select">
+                        <option value="">All Formats</option>
+                        {% for value, label in format_choices %}
+                            <option value="{{ value }}" {% if request.GET.format == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search books..." value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Featured Books -->
+    {% if featured_books and not request.GET.search and not request.GET.category %}
+        <div class="row mb-5">
+            <div class="col-12">
+                <h3 class="mb-3">Featured Books</h3>
+                <div class="row">
+                    {% for book in featured_books %}
+                        <div class="col-md-2 mb-3">
+                            <div class="card h-100 border-warning">
+                                {% if book.cover_image %}
+                                    <img src="{{ book.cover_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body p-2">
+                                    <h6 class="card-title small">
+                                        <a href="{{ book.get_absolute_url }}" class="text-decoration-none">{{ book.title|truncatechars:30 }}</a>
+                                    </h6>
+                                    <p class="card-text small text-muted">{{ book.author }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Books Grid -->
+    <div class="row">
+        {% for book in books %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ book.get_absolute_url }}" class="text-decoration-none">{{ book.title }}</a>
+                        </h5>
+                        <p class="card-text"><strong>Author:</strong> {{ book.author }}</p>
+                        <p class="card-text">{{ book.description|truncatewords:15 }}</p>
+                        
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            {% for category in book.categories.all %}
+                                <span class="badge bg-secondary">{{ category.name }}</span>
+                            {% endfor %}
+                            <span class="badge bg-info">{{ book.get_format_display }}</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted me-2">
+                                    <i class="fas fa-download me-1"></i>{{ book.downloads }}
+                                </small>
+                                <small class="text-muted me-2">
+                                    <i class="fas fa-eye me-1"></i>{{ book.views }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-star me-1"></i>{{ book.average_rating|floatformat:1 }}
+                                </small>
+                            </div>
+                            <small class="text-muted">{{ book.publication_year|default:"" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                    <h3>No Books Found</h3>
+                    <p class="text-muted">
+                        {% if request.GET.search or request.GET.category or request.GET.format %}
+                            No books match your search criteria.
+                        {% else %}
+                            No books have been uploaded yet.
+                        {% endif %}
+                    </p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'books:create' %}" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload First Book
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Books pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.format %}&format={{ request.GET.format }}{% endif %}">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.format %}&format={{ request.GET.format }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.format %}&format={{ request.GET.format }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.format %}&format={{ request.GET.format }}{% endif %}">Last &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}

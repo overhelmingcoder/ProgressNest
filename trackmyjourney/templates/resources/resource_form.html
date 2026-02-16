@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Edit Resource{% else %}Upload Resource{% endif %} - TrackMyJourney{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                    <h3 class="mb-0 fw-bold">
+                        <i class="fas fa-upload me-2"></i>
+                        {% if object %}Edit Resource{% else %}Upload New Resource{% endif %}
+                    </h3>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="d-flex gap-3 mt-4 justify-content-end">
+                            <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'resources:list' %}{% endif %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                                <i class="fas fa-save me-2"></i>
+                                {% if object %}Update Resource{% else %}Upload Resource{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

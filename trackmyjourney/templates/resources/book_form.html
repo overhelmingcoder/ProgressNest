@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - TrackMyJourney{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/resources.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success text-white rounded-top-4 py-3">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-book me-2"></i>{{ title }}
+                    </h4>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="{{ form.title.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-heading"></i>Book Title <span class="text-danger">*</span>
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="{{ form.author.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-user"></i>Author <span class="text-danger">*</span>
+                                </label>
+                                {{ form.author }}
+                                {% if form.author.errors %}
+                                    <div class="text-danger small mt-1">{{ form.author.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                <i class="fas fa-align-left"></i>Description <span class="text-danger">*</span>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.category.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-tag"></i>Category <span class="text-danger">*</span>
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="{{ form.isbn.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-barcode"></i>ISBN
+                                </label>
+                                {{ form.isbn }}
+                                {% if form.isbn.errors %}
+                                    <div class="text-danger small mt-1">{{ form.isbn.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="{{ form.publication_year.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-calendar"></i>Publication Year
+                                </label>
+                                {{ form.publication_year }}
+                                {% if form.publication_year.errors %}
+                                    <div class="text-danger small mt-1">{{ form.publication_year.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.file.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-file-pdf"></i>Book File
+                                </label>
+                                {{ form.file }}
+                                {% if form.file.errors %}
+                                    <div class="text-danger small mt-1">{{ form.file.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.cover_image.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-image"></i>Cover Image
+                                </label>
+                                {{ form.cover_image }}
+                                {% if form.cover_image.errors %}
+                                    <div class="text-danger small mt-1">{{ form.cover_image.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="{{ form.pages.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-file-alt"></i>Pages
+                                </label>
+                                {{ form.pages }}
+                                {% if form.pages.errors %}
+                                    <div class="text-danger small mt-1">{{ form.pages.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <label for="{{ form.language.id_for_label }}" class="form-label fw-bold form-group-icon">
+                                    <i class="fas fa-language"></i>Language
+                                </label>
+                                {{ form.language }}
+                                {% if form.language.errors %}
+                                    <div class="text-danger small mt-1">{{ form.language.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-3 mt-4 justify-content-end">
+                            <a href="{% url 'book_list' %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill">
+                                <i class="fas fa-upload me-2"></i>Upload Book
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

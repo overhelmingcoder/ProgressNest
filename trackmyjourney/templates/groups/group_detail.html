@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ group.name }} - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Group Header -->
+    <div class="card mb-4">
+        {% if group.cover_image %}
+            <img src="{{ group.cover_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+        {% endif %}
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if group.logo %}
+                            <img src="{{ group.logo.url }}" class="rounded me-3" width="60" height="60">
+                        {% endif %}
+                        <div>
+                            <h2 class="mb-1">{{ group.name }}</h2>
+                            <span class="badge bg-primary">{{ group.get_category_display }}</span>
+                            <span class="badge bg-{% if group.privacy == 'public' %}success{% elif group.privacy == 'private' %}danger{% else %}warning{% endif %}">
+                                {{ group.get_privacy_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <p>{{ group.description }}</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="mb-3">
+                        <h5>{{ group.member_count }}</h5>
+                        <small class="text-muted">Members</small>
+                    </div>
+                    {% if user.is_authenticated %}
+                        {% if is_member %}
+                            <a href="{% url 'groups:leave' group.slug %}" class="btn btn-outline-danger">
+                                <i class="fas fa-sign-out-alt me-1"></i>Leave Group
+                            </a>
+                        {% else %}
+                            <a href="{% url 'groups:join' group.slug %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Join Group
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Create Post -->
+            {% if is_member %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <a href="{% url 'groups:create_post' group.slug %}" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-2"></i>Create New Post
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Posts -->
+            {% for post in posts %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title">{{ post.title }}</h5>
+                            {% if post.is_pinned %}
+                                <span class="badge bg-warning">Pinned</span>
+                            {% endif %}
+                        </div>
+                        <p class="card-text">{{ post.content|truncatewords:30 }}</p>
+                        
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" class="img-fluid rounded mb-2" style="max-height: 300px;">
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">
+                                    By {{ post.author.get_full_name|default:post.author.username }}
+                                    • {{ post.created_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary like-btn" data-url="{% url 'groups:like_post' post.pk %}">
+                                    <i class="fas fa-heart me-1"></i>{{ post.total_likes }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h4>No Posts Yet</h4>
+                    <p class="text-muted">Be the first to start a conversation in this group!</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Group Info -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Group Information</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created:</strong> {{ group.created_at|date:"M d, Y" }}</p>
+                    <p><strong>Creator:</strong> {{ group.creator.get_full_name|default:group.creator.username }}</p>
+                    <p><strong>Posts:</strong> {{ group.post_count }}</p>
+                </div>
+            </div>
+            
+            <!-- Recent Members -->
+            {% if recent_members %}
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Recent Members</h6>
+                    </div>
+                    <div class="card-body">
+                        {% for member in recent_members %}
+                            <div class="d-flex align-items-center mb-2">
+                                {% if member.avatar %}
+                                    <img src="{{ member.avatar.url }}" class="rounded-circle me-2" width="30" height="30">
+                                {% else %}
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-user text-white small"></i>
+                                    </div>
+                                {% endif %}
+                                <small>{{ member.get_full_name|default:member.username }}</small>
+                            </div>
+                        {% endfor %}
+                        <a href="{% url 'groups:members' group.slug %}" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                            View All Members
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

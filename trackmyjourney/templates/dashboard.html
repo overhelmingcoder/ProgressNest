@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard - ProgressNest{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-header bg-gradient-primary text-white p-4 rounded-3 shadow">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="h2 mb-2">
+                            Welcome back, {{ user.get_full_name|default:user.username }}! 👋
+                        </h1>
+                        <p class="mb-0 opacity-75">
+                            Ready to make progress on your goals today?
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="{% url 'goals:create' %}" class="btn btn-warning btn-lg shadow">
+                            <i class="fas fa-plus me-2"></i>New Goal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card bg-primary text-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="fas fa-bullseye fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="h2 mb-0">{{ total_goals }}</h3>
+                            <p class="mb-0 opacity-75">Total Goals</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card bg-success text-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="h2 mb-0">{{ completed_goals }}</h3>
+                            <p class="mb-0 opacity-75">Completed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card bg-warning text-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="fas fa-trophy fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="h2 mb-0">{{ total_achievements }}</h3>
+                            <p class="mb-0 opacity-75">Achievements</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card bg-info text-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="fas fa-pen-fancy fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="h2 mb-0">{{ total_blog_posts }}</h3>
+                            <p class="mb-0 opacity-75">Blog Posts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row g-4">
+        <!-- Recent Goals -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-bullseye text-primary me-2"></i>Recent Goals
+                        </h5>
+                        <a href="{% url 'goals:list' %}" class="btn btn-sm btn-outline-primary">
+                            View All <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_goals %}
+                        <div class="goals-list">
+                            {% for goal in recent_goals %}
+                                <div class="goal-item p-3 border rounded mb-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-2 fw-bold">
+                                                <a href="{% url 'goals:detail' goal.pk %}" class="text-decoration-none text-dark">
+                                                    {{ goal.title }}
+                                                </a>
+                                            </h6>
+                                            <p class="text-muted small mb-2">{{ goal.description|truncatewords:15 }}</p>
+                                            <div class="progress mb-2" style="height: 8px; background-color: #e9ecef;">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ goal.progress }}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);"
+                                                     aria-valuenow="{{ goal.progress }}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">
+                                                <strong>{{ goal.progress }}% complete</strong> • 
+                                                <span class="badge bg-{{ goal.status|yesno:'success,warning,secondary' }}">
+                                                    {{ goal.get_status_display }}
+                                                </span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bullseye fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">No goals yet</h6>
+                            <p class="text-muted">Create your first goal to get started!</p>
+                            <a href="{% url 'goals:create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Goal
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h6 class="card-title mb-0 fw-bold">
+                        <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'goals:create' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Create Goal
+                        </a>
+                        <a href="{% url 'achievements:create' %}" class="btn btn-outline-success">
+                            <i class="fas fa-trophy me-2"></i>Add Achievement
+                        </a>
+                        <a href="{% url 'blog:create' %}" class="btn btn-outline-info">
+                            <i class="fas fa-pen me-2"></i>Write Blog Post
+                        </a>
+                        <a href="{% url 'resources:create' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-upload me-2"></i>Share Resource
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Achievements -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-trophy text-warning me-2"></i>Recent Achievements
+                        </h6>
+                        <a href="{% url 'achievements:list' %}" class="btn btn-sm btn-outline-warning">
+                            View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_achievements %}
+                        {% for achievement in recent_achievements %}
+                            <div class="achievement-item d-flex align-items-center mb-3">
+                                <div class="achievement-icon me-3">
+                                    <i class="fas fa-medal text-warning fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ achievement.title }}</h6>
+                                    <small class="text-muted">{{ achievement.created_at|naturaltime }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-trophy fa-2x text-muted mb-2"></i>
+                            <p class="text-muted small mb-0">No achievements yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

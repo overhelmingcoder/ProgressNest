@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ resource.title }} - TrackMyJourney{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <!-- Resource Header Section -->
+      <header class="text-center mb-5">
+        <h1 class="fw-bold display-4 mb-3 resource-title">{{ resource.title }}</h1>
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 text-muted mb-4">
+          <span class="d-flex align-items-center">
+            <i class="fas fa-user-circle me-2"></i>Uploaded by <strong>{{ resource.uploaded_by.get_full_name|default:resource.uploaded_by.username }}</strong>
+          </span>
+          <span class="d-flex align-items-center">
+            <i class="fas fa-calendar-alt me-2"></i>{{ resource.uploaded_at|date:"F j, Y" }}
+          </span>
+          <span class="d-flex align-items-center">
+            <i class="fas fa-eye me-2"></i>{{ resource.views }} views
+          </span>
+          <span class="d-flex align-items-center">
+            <i class="fas fa-download me-2"></i>{{ resource.downloads }} downloads
+          </span>
+        </div>
+        <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">{{ resource.get_category_display }}</span>
+          <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">{{ resource.get_resource_type_display }}</span>
+          {% if resource.file_extension %}
+            <span class="badge bg-info-subtle text-info rounded-pill px-3 py-2">{{ resource.file_extension }}</span>
+          {% endif %}
+        </div>
+        
+        {% if resource.thumbnail %}
+          <img src="{{ resource.thumbnail.url }}" class="img-fluid rounded-4 shadow-lg mb-4 resource-featured-image" alt="{{ resource.title }}">
+        {% elif resource.resource_type == 'video' %}
+          <div class="embed-responsive embed-responsive-16by9 rounded-4 shadow-lg mb-4 resource-featured-image" style="max-height: 500px; overflow: hidden;">
+            <iframe class="embed-responsive-item" src="{{ resource.url }}" allowfullscreen style="width: 100%; height: 100%; border: none;"></iframe>
+          </div>
+        {% else %}
+          <div class="bg-light d-flex align-items-center justify-content-center text-muted rounded-4 shadow-lg mb-4 resource-featured-image" style="height: 400px;">
+            <i class="fas fa-file-alt fa-5x"></i>
+          </div>
+        {% endif %}
+      </header>
+
+      <!-- Resource Description -->
+      <article class="resource-content bg-white rounded-4 shadow-sm p-4 p-md-5 mb-5">
+        <h3 class="fw-bold mb-3">Description</h3>
+        <div class="fs-5 lh-lg text-dark-emphasis">
+          {{ resource.description|linebreaks }}
+        </div>
+        {% if processed_tags %} {# Changed from resource.tags #}
+          <div class="mt-4 pt-4 border-top">
+            <h6 class="fw-bold mb-2">Tags:</h6>
+            <div class="d-flex flex-wrap gap-2">
+              {% for tag in processed_tags %} {# Changed from resource.tags.split(',') #}
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </article>
+
+      <!-- Actions: Download/View, Like, Bookmark -->
+      <div class="d-flex justify-content-center gap-4 mb-5 flex-wrap">
+        {% if user.is_authenticated %}
+          {% if resource.file %}
+            <a href="{% url 'resources:download' resource.pk %}" class="btn btn-success btn-lg rounded-pill px-4 py-2 shadow-sm">
+              <i class="fas fa-download me-2"></i>Download Resource
+            </a>
+          {% elif resource.url %}
+            <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg rounded-pill px-4 py-2 shadow-sm">
+              <i class="fas fa-external-link-alt me-2"></i>View External Link
+            </a>
+          {% endif %}
+        {% endif %}
+        
+        <button type="button" class="btn btn-outline-danger btn-lg rounded-pill px-4 py-2 like-btn" data-resource-id="{{ resource.pk }}">
+          <i class="fas fa-heart me-2"></i>Like
+        </button>
+        <button type="button" class="btn btn-outline-warning btn-lg rounded-pill px-4 py-2 bookmark-btn" data-resource-id="{{ resource.pk }}">
+          <i class="fas fa-bookmark me-2"></i>Bookmark
+        </button>
+      </div>
+
+      <!-- Rating Section -->
+      <section class="mb-5">
+        <h3 class="fw-bold mb-4 text-center">Rate This Resource</h3>
+        <div class="rating-card bg-white rounded-4 shadow-sm p-4 p-md-5">
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'resources:rate' resource.pk %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="{{ rating_form.rating.id_for_label }}" class="form-label fw-bold">Your Rating:</label>
+                <div class="d-flex gap-2">
+                  {% for radio in rating_form.rating %}
+                    <div class="form-check form-check-inline">
+                      {{ radio.tag }}
+                      <label class="form-check-label" for="{{ radio.id_for_label }}">
+                        <i class="fas fa-star text-warning"></i> {{ radio.choice_label }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+                {% if rating_form.rating.errors %}
+                  <div class="text-danger small mt-1">{{ rating_form.rating.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="mb-3">
+                <label for="{{ rating_form.review.id_for_label }}" class="form-label fw-bold">Your Review (Optional):</label>
+                {{ rating_form.review }}
+                {% if rating_form.review.errors %}
+                  <div class="text-danger small mt-1">{{ rating_form.review.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 py-2">
+                <i class="fas fa-star me-2"></i>Submit Rating
+              </button>
+            </form>
+          {% else %}
+            <p class="text-center lead text-muted">
+              <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg rounded-pill">
+                <i class="fas fa-sign-in-alt me-2"></i>Login to rate this resource
+              </a>
+            </p>
+          {% endif %}
+          
+          <hr class="my-4">
+          <h4 class="fw-bold mb-3">All Reviews</h4>
+          {% for rating in resource.ratings.all %}
+            <div class="mb-3 pb-3 border-bottom">
+              <div class="d-flex align-items-center mb-1">
+                <div class="avatar-placeholder me-3 rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                  <i class="fas fa-user text-muted"></i>
+                </div>
+                <div>
+                  <p class="fw-bold mb-0">{{ rating.user.get_full_name|default:rating.user.username }}</p>
+                  <div class="text-warning small">
+                    {% for i in "12345"|make_list %}
+                      {% if forloop.counter <= rating.rating %}
+                        <i class="fas fa-star"></i>
+                      {% else %}
+                        <i class="far fa-star"></i>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              {% if rating.review %}
+                <p class="mb-0 ms-5">{{ rating.review }}</p>
+              {% endif %}
+              <span class="text-muted small ms-5">{{ rating.created_at|date:"M d, Y" }}</span>
+            </div>
+          {% empty %}
+            <p class="text-muted text-center">No ratings yet. Be the first to rate this resource!</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Comments Section -->
+      <section class="mb-5">
+        <h3 class="fw-bold mb-4 text-center">Comments ({{ comments.count }})</h3>
+        <div class="comments-list bg-white rounded-4 shadow-sm p-4 p-md-5">
+          {% for comment in comments %}
+            <div class="comment-item mb-4 pb-4 border-bottom">
+              <div class="d-flex align-items-center mb-2">
+                <div class="avatar-placeholder me-3 rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                  <i class="fas fa-user text-muted"></i>
+                </div>
+                <div>
+                  <p class="fw-bold mb-0">{{ comment.user.get_full_name|default:comment.user.username }}</p>
+                  <span class="text-muted small">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+              </div>
+              <div class="comment-content bg-light rounded p-3 ms-5">
+                <p class="mb-0">{{ comment.content }}</p>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center py-4">
+              <p class="text-muted lead">No comments yet. Be the first to share your thoughts!</p>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Add Comment Form -->
+      {% if user.is_authenticated %}
+      <section class="mb-5">
+        <h3 class="fw-bold mb-4 text-center">Add Your Comment</h3>
+        <div class="comment-form-card bg-white rounded-4 shadow-sm p-4 p-md-5">
+          <form method="post" action="{% url 'resources:add_comment' resource.pk %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="{{ comment_form.content.id_for_label }}" class="form-label fw-bold">Your Comment</label>
+              {{ comment_form.content }}
+              {% if comment_form.content.errors %}
+                <div class="text-danger small mt-1">{{ comment_form.content.errors }}</div>
+              {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 py-2">
+              <i class="fas fa-paper-plane me-2"></i>Submit Comment
+            </button>
+          </form>
+        </div>
+      </section>
+      {% else %}
+        <div class="text-center py-5">
+          <p class="lead text-muted">
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg rounded-pill">
+              <i class="fas fa-sign-in-alt me-2"></i>Login to comment
+            </a>
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Generic AJAX handler for like/bookmark buttons
+        function handleAction(url, buttonElement) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                // You might want to update the UI based on 'data.status' or other fields
+                // For now, it just confirms success.
+                if (data.status === 'success') {
+                    console.log('Action successful!');
+                    // Optionally, add visual feedback like changing button color/icon
+                    // For example, if you had a like count, you'd update it here.
+                } else {
+                    console.error('Action failed:', data);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const resourceId = this.dataset.resourceId;
+                const url = `/resources/${resourceId}/like/`; // Adjust URL if needed
+                handleAction(url, this);
+            });
+        });
+
+        document.querySelectorAll('.bookmark-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const resourceId = this.dataset.resourceId;
+                const url = `/resources/${resourceId}/bookmark/`; // Adjust URL if needed
+                handleAction(url, this);
+            });
+        });
+    });
+</script>
+{% endblock %}

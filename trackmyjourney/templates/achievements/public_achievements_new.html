@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load achievement_extras %}
+
+{% block title %}Achievements - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-4">
+    <!-- Header Section with Buttons on Right -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 700; color: #1f2937;">
+                <i class="fas fa-trophy me-3" style="color: #f59e0b;"></i>Achievements
+            </h1>
+        </div>
+        <div class="btn-group" role="group" style="background: white; border-radius: 50px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: none;">
+            <button type="button" class="btn btn-primary" style="font-weight: 600; padding: 12px 28px; border-radius: 50px 0 0 50px; border: none; background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);">
+                <i class="fas fa-globe me-2"></i>Public Achievements
+            </button>
+            <a href="{% url 'achievements:list' %}" class="btn btn-light" style="font-weight: 600; padding: 12px 28px; border: none; color: #1f2937; background-color: #f3f4f6;">
+                <i class="fas fa-user me-2"></i>My Achievements
+            </a>
+            <a href="{% url 'achievements:create' %}" class="btn btn-light" style="font-weight: 600; padding: 12px 28px; border-radius: 0 50px 50px 0; border: none; color: #1f2937; background-color: #f3f4f6;">
+                <i class="fas fa-plus me-2"></i>Add Achievement
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="get" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-600 mb-2">Category</label>
+                            <select name="category" class="form-select" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px;">
+                                <option value="">All Categories</option>
+                                <option value="goal">Goal Achievement</option>
+                                <option value="milestone">Milestone</option>
+                                <option value="habit">Habit Formation</option>
+                                <option value="learning">Learning</option>
+                                <option value="fitness">Fitness</option>
+                                <option value="career">Career</option>
+                                <option value="personal">Personal Development</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-600 mb-2">Badge Type</label>
+                            <select name="badge" class="form-select" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px;">
+                                <option value="">All Badges</option>
+                                <option value="gold">Gold</option>
+                                <option value="silver">Silver</option>
+                                <option value="bronze">Bronze</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-600 mb-2">Search</label>
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" placeholder="Search achievements..." style="border: 2px solid #6366f1; border-radius: 8px 0 0 8px; padding: 10px;">
+                                <button class="btn btn-primary" type="submit" style="border-radius: 0 8px 8px 0; font-weight: 600; border: 2px solid #6366f1;">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements Grid -->
+    <div class="row g-4 mb-5">
+        {% for achievement in achievements %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm hover-shadow" style="transition: all 0.3s ease; cursor: pointer; border-radius: 12px; overflow: hidden;">
+                    <!-- Achievement Image -->
+                    <div style="position: relative; height: 220px; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        {% if achievement.image %}
+                            <img src="{{ achievement.image.url }}" class="w-100 h-100" style="object-fit: cover;">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-trophy fa-5x" style="color: rgba(255,255,255,0.3);"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Badge Medal Overlay -->
+                        {% if achievement.badge_type != 'default' %}
+                            <div style="position: absolute; top: 10px; left: 10px;">
+                                {% if achievement.badge_type == 'gold' %}
+                                    <span class="badge bg-warning" style="font-size: 0.9rem; padding: 8px 12px;">
+                                        <i class="fas fa-medal me-1"></i>Gold
+                                    </span>
+                                {% elif achievement.badge_type == 'silver' %}
+                                    <span class="badge bg-secondary" style="font-size: 0.9rem; padding: 8px 12px;">
+                                        <i class="fas fa-medal me-1"></i>Silver
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning" style="font-size: 0.9rem; padding: 8px 12px;">
+                                        <i class="fas fa-medal me-1"></i>Bronze
+                                    </span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Public Badge -->
+                        <div style="position: absolute; top: 10px; right: 10px;">
+                            <span class="badge bg-success" style="font-size: 0.85rem; padding: 6px 10px;">
+                                <i class="fas fa-globe me-1"></i>Public
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body p-4">
+                        <!-- Title & Category -->
+                        <div class="mb-3">
+                            <h5 class="card-title fw-700 mb-2" style="font-size: 1.1rem; color: #1f2937;">
+                                {{ achievement.title|truncatewords:8 }}
+                            </h5>
+                            <span class="badge bg-light text-primary" style="font-weight: 500;">
+                                {{ achievement.get_category_display }}
+                            </span>
+                        </div>
+
+                        <!-- Description -->
+                        <p class="card-text text-muted small mb-3" style="line-height: 1.5;">
+                            {{ achievement.description|truncatewords:15 }}
+                        </p>
+
+                        <!-- User Info with Avatar -->
+                        <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                            {% if achievement.user.profile.avatar %}
+                                <img src="{{ achievement.user.profile.avatar.url }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700; font-size: 0.9rem;">
+                                    {{ achievement.user.first_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div class="fw-600" style="font-size: 0.95rem; color: #1f2937;">{{ achievement.user.get_full_name|default:achievement.user.username }}</div>
+                                <small class="text-muted">{{ achievement.date_achieved }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="row text-center mb-4" style="gap: 0;">
+                            <div class="col">
+                                <div class="fw-700" style="font-size: 1.2rem; color: #f59e0b;">
+                                    {{ achievement.total_likes }}
+                                </div>
+                                <small class="text-muted">Likes</small>
+                            </div>
+                            <div class="col border-start border-end">
+                                <div class="fw-700" style="font-size: 1.2rem; color: #3b82f6;">
+                                    {{ achievement.comments.count }}
+                                </div>
+                                <small class="text-muted">Comments</small>
+                            </div>
+                            <div class="col">
+                                <div class="fw-700" style="font-size: 1.2rem; color: #10b981;">
+                                    Public
+                                </div>
+                                <small class="text-muted">Status</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer - Actions -->
+                    <div class="card-footer bg-light border-top p-0">
+                        <div class="d-grid gap-2 p-3">
+                            {% if user.is_authenticated %}
+                                <button class="btn btn-sm btn-outline-danger like-btn" data-url="{% url 'achievements:like' achievement.pk %}" style="font-weight: 600;">
+                                    {% if achievement.liked_by %}
+                                        <i class="fas fa-heart text-danger me-2"></i>
+                                    {% else %}
+                                        <i class="far fa-heart me-2"></i>
+                                    {% endif %}
+                                    <span class="like-count">{{ achievement.total_likes }}</span> Like
+                                </button>
+                            {% else %}
+                                <button class="btn btn-sm btn-outline-danger" disabled style="font-weight: 600;">
+                                    <i class="far fa-heart me-2"></i>
+                                    <span class="like-count">{{ achievement.total_likes }}</span> Like
+                                </button>
+                            {% endif %}
+                            <a href="{{ achievement.get_absolute_url }}" class="btn btn-sm btn-primary" style="font-weight: 600;">
+                                <i class="fas fa-comment me-2"></i>View & Comment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 12px; padding: 60px 20px;">
+                    <i class="fas fa-trophy fa-5x text-muted mb-4" style="opacity: 0.5;"></i>
+                    <h3 class="fw-700 mb-2" style="color: #1f2937;">No Public Achievements Yet</h3>
+                    <p class="text-muted mb-4">Share your achievements with the community to see them here!</p>
+                    <a href="{% url 'achievements:create' %}" class="btn btn-primary btn-lg" style="font-weight: 600;">
+                        <i class="fas fa-plus me-2"></i>Add Your Achievement
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mb-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+
+<style>
+    .hover-shadow {
+        transform: translateY(0);
+    }
+    
+    .hover-shadow:hover {
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-8px);
+    }
+    
+    .fw-600 {
+        font-weight: 600;
+    }
+    
+    .fw-700 {
+        font-weight: 700;
+    }
+</style>
+
+<!-- AJAX Like Button Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const likeButtons = document.querySelectorAll('.like-btn');
+    
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const url = this.getAttribute('data-url');
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                            document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const likeCount = this.querySelector('.like-count');
+                    likeCount.textContent = data.count;
+                    
+                    const icon = this.querySelector('i');
+                    if (data.liked) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas', 'text-danger');
+                    } else {
+                        icon.classList.remove('fas', 'text-danger');
+                        icon.classList.add('far');
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+</script>
+{% endblock %}

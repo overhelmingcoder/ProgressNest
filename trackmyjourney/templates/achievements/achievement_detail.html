@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load achievement_extras %}
+
+{% block title %}{{ achievement.title }} - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                {% if achievement.image %}
+                    <img src="{{ achievement.image.url }}" class="card-img-top" style="height: 300px; object-fit: cover;">
+                {% endif %}
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <h2 class="mb-0 me-3">{{ achievement.title }}</h2>
+                            {% if achievement.badge_type != 'none' %}
+                                <i class="fas fa-medal fa-2x text-{% if achievement.badge_type == 'gold' %}warning{% elif achievement.badge_type == 'silver' %}secondary{% else %}warning{% endif %}"></i>
+                            {% endif %}
+                        </div>
+                        {% if achievement.user == request.user %}
+                            <div class="btn-group">
+                                <a href="{% url 'achievements:update' achievement.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'achievements:delete' achievement.pk %}" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Category:</strong> {{ achievement.get_category_display }}</p>
+                            <p><strong>Date Achieved:</strong> {{ achievement.date_achieved }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>By:</strong> {{ achievement.user.get_full_name|default:achievement.user.username }}</p>
+                            <p><strong>Visibility:</strong> 
+                                {% if achievement.is_public %}
+                                    <span class="badge bg-success">Public</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Private</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p>{{ achievement.description|linebreaks }}</p>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        {% if achievement.user == request.user %}
+                            <span class="badge bg-info me-2">Your Achievement</span>
+                        {% elif achievement.is_public %}
+                            <span class="badge bg-success me-2">Shared Publicly</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-4 flex-wrap gap-2">
+                        {% if user.is_authenticated %}
+                            <button class="btn btn-outline-danger like-btn" data-url="{% url 'achievements:like' achievement.pk %}">
+                                {% if is_liked %}
+                                    <i class="fas fa-heart text-danger me-1"></i>
+                                {% else %}
+                                    <i class="far fa-heart me-1"></i>
+                                {% endif %}
+                                <span class="like-count">{{ achievement.total_likes }}</span> Likes
+                            </button>
+                        {% else %}
+                            <button class="btn btn-outline-danger" disabled>
+                                <i class="far fa-heart me-1"></i>
+                                <span class="like-count">{{ achievement.total_likes }}</span> Likes
+                            </button>
+                        {% endif %}
+                        <small class="text-muted">
+                            <i class="fas fa-eye me-1"></i>Created {{ achievement.created_at|date:"M d, Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Comments Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Comments</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'achievements:add_comment' achievement.pk %}" class="mb-4">
+                            {% csrf_token %}
+                            {{ comment_form.as_p }}
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-comment me-1"></i>Post Comment
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    {% for comment in comments %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                {% if comment.user.avatar %}
+                                    <img src="{{ comment.user.avatar.url }}" class="rounded-circle" width="40" height="40">
+                                {% else %}
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">{{ comment.user.get_full_name|default:comment.user.username }}</h6>
+                                    <small class="text-muted">{{ comment.created_at|date:"M d, Y g:i A" }}</small>
+                                </div>
+                                <p class="mb-0">{{ comment.content|linebreaks }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No comments yet. Be the first to comment!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Achievement Owner</h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if achievement.user.avatar %}
+                        <img src="{{ achievement.user.avatar.url }}" class="rounded-circle mb-3" width="80" height="80">
+                    {% else %}
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user fa-2x text-white"></i>
+                        </div>
+                    {% endif %}
+                    <h6>{{ achievement.user.get_full_name|default:achievement.user.username }}</h6>
+                    <p class="text-muted">@{{ achievement.user.username }}</p>
+                    {% if achievement.user.bio %}
+                        <p class="small">{{ achievement.user.bio|truncatewords:20 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

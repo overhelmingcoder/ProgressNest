@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Edit Community{% else %}Create Community{% endif %} - ProjectNest{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white text-center py-3 rounded-top">
+                    <h3 class="mb-0 fw-bold">
+                        <i class="fas fa-heart me-2"></i>
+                        {% if object %}Edit Community{% else %}Create New Community{% endif %}
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% crispy form %}
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                {% if object %}Update Community{% else %}Create Community{% endif %}
+                            </button>
+                            <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'community:list' %}{% endif %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

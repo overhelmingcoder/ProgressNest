@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }} - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="row g-0">
+                    {% if book.cover_image %}
+                        <div class="col-md-4">
+                            <img src="{{ book.cover_image.url }}" class="img-fluid rounded-start h-100" style="object-fit: cover;">
+                        </div>
+                    {% endif %}
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ book.title }}</h2>
+                            <p class="card-text"><strong>Author:</strong> {{ book.author }}</p>
+                            {% if book.isbn %}
+                                <p class="card-text"><strong>ISBN:</strong> {{ book.isbn }}</p>
+                            {% endif %}
+                            <p class="card-text"><strong>Format:</strong> {{ book.get_format_display }}</p>
+                            {% if book.pages %}
+                                <p class="card-text"><strong>Pages:</strong> {{ book.pages }}</p>
+                            {% endif %}
+                            {% if book.publication_year %}
+                                <p class="card-text"><strong>Published:</strong> {{ book.publication_year }}</p>
+                            {% endif %}
+                            {% if book.publisher %}
+                                <p class="card-text"><strong>Publisher:</strong> {{ book.publisher }}</p>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2 mb-3 flex-wrap">
+                                {% if user.is_authenticated %}
+                                    {% if book.allow_download %}
+                                        <a href="{% url 'books:download' book.slug %}" class="btn btn-primary">
+                                            <i class="fas fa-download me-1"></i>Download
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'books:add_to_reading_list' book.slug %}" class="btn btn-info">
+                                        <i class="fas fa-book me-1"></i>Add to Reading List
+                                    </a>
+                                    <button class="btn btn-outline-danger like-btn" data-url="{% url 'books:like' book.slug %}" data-book-id="{{ book.id }}">
+                                        <i class="fas fa-heart me-1"></i><span class="like-count">{{ book.total_likes }}</span>
+                                    </button>
+                                    <button class="btn btn-outline-primary bookmark-btn" data-url="{% url 'books:bookmark' book.slug %}" data-book-id="{{ book.id }}">
+                                        <i class="fas fa-bookmark me-1"></i><span class="bookmark-count">{{ book.total_bookmarks }}</span>
+                                    </button>
+                                {% else %}
+                                    <p class="text-muted"><a href="{% url 'accounts:login' %}">Login</a> to add books to your reading list and rate them.</p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">
+                                    <i class="fas fa-download me-1"></i>{{ book.downloads }} downloads
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-star me-1"></i>{{ book.average_rating|floatformat:1 }} rating
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5>Description</h5>
+                    <p>{{ book.description|linebreaks }}</p>
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+                <!-- Reading List Status -->
+                {% if reading_list_item %}
+                    <div class="card mt-4 border-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Your Reading Status</h5>
+                            <p><strong>Status:</strong> <span class="badge bg-info">{{ reading_list_item.get_status_display }}</span></p>
+                            {% if reading_list_item.progress > 0 %}
+                                <p><strong>Progress:</strong> {{ reading_list_item.progress }}%</p>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar" 
+                                         style="width: {{ reading_list_item.progress }}% !important; background-color: #198754 !important; font-size: 14px; line-height: 25px; display: flex !important; align-items: center !important; justify-content: center !important;">{{ reading_list_item.progress }}%</div>
+                                </div>
+                            {% endif %}
+                            {% if reading_list_item.notes %}
+                                <p class="mt-2"><strong>Notes:</strong> {{ reading_list_item.notes }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Rating Form -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Rate This Book</h5>
+                        {% if user_rating %}
+                            <div class="alert alert-info mb-3">
+                                Your rating: <strong>{{ user_rating.rating }}/5 stars</strong>
+                                {% if user_rating.review %}
+                                    <p class="mt-2">Your review: {{ user_rating.review|truncatewords:20 }}</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        <form method="post" action="{% url 'books:rate' book.slug %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="rating" class="form-label">Rating</label>
+                                <select name="rating" id="rating" class="form-select" required>
+                                    <option value="">Select a rating</option>
+                                    <option value="1" {% if user_rating.rating == 1 %}selected{% endif %}>1 Star - Poor</option>
+                                    <option value="2" {% if user_rating.rating == 2 %}selected{% endif %}>2 Stars - Fair</option>
+                                    <option value="3" {% if user_rating.rating == 3 %}selected{% endif %}>3 Stars - Good</option>
+                                    <option value="4" {% if user_rating.rating == 4 %}selected{% endif %}>4 Stars - Very Good</option>
+                                    <option value="5" {% if user_rating.rating == 5 %}selected{% endif %}>5 Stars - Excellent</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="review" class="form-label">Review (Optional)</label>
+                                <textarea name="review" id="review" class="form-control" rows="3" placeholder="Share your thoughts about this book...">{% if user_rating %}{{ user_rating.review }}{% endif %}</textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Rating</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Categories</h6>
+                </div>
+                <div class="card-body">
+                    {% for category in book.categories.all %}
+                        <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% if related_books %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Related Books</h6>
+                    </div>
+                    <div class="card-body">
+                        {% for related in related_books %}
+                            <div class="d-flex mb-2">
+                                {% if related.cover_image %}
+                                    <img src="{{ related.cover_image.url }}" width="40" height="50" class="me-2">
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-0">
+                                        <a href="{{ related.get_absolute_url }}" class="text-decoration-none">{{ related.title|truncatechars:30 }}</a>
+                                    </h6>
+                                    <small class="text-muted">{{ related.author }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like button functionality
+    const likeBtn = document.querySelector('.like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch(this.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const likeCount = likeBtn.querySelector('.like-count');
+                    likeCount.textContent = data.total_likes;
+                    likeBtn.classList.toggle('btn-outline-danger');
+                    likeBtn.classList.toggle('btn-danger');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    }
+
+    // Bookmark button functionality
+    const bookmarkBtn = document.querySelector('.bookmark-btn');
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch(this.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const bookmarkCount = bookmarkBtn.querySelector('.bookmark-count');
+                    bookmarkCount.textContent = data.total_bookmarks;
+                    bookmarkBtn.classList.toggle('btn-outline-primary');
+                    bookmarkBtn.classList.toggle('btn-primary');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    }
+});
+</script>
+
+<style>
+    .progress {
+        background-color: #e9ecef !important;
+        height: 25px !important;
+        border-radius: 0.25rem !important;
+    }
+    
+    .progress-bar {
+        transition: width 0.6s ease-out !important;
+        will-change: width;
+        padding: 0 !important;
+        position: relative !important;
+    }
+</style>
+{% endblock %}

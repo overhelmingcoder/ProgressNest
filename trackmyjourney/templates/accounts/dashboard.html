@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <!-- User Profile Card -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-body text-center p-4">
+                    <div class="position-relative d-inline-block mb-3">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle shadow" width="100" height="100" style="object-fit: cover;">
+                        {% else %}
+                            <div class="bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center shadow" style="width: 100px; height: 100px;">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                        {% endif %}
+                        <div class="position-absolute bottom-0 end-0">
+                            <span class="badge bg-success rounded-pill">
+                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted small mb-3">{{ user.email }}</p>
+                    {% if user.bio %}
+                        <p class="text-muted small mb-3">{{ user.bio|truncatewords:15 }}</p>
+                    {% else %}
+                        <p class="text-muted small mb-3">Welcome to your personal development journey!</p>
+                    {% endif %}
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions Card -->
+            <div class="card dashboard-card">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="fw-bold mb-0">
+                        <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'goal_create' %}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="fas fa-plus-circle me-2"></i>Create New Goal
+                        </a>
+                        <a href="{% url 'achievement_create' %}" class="btn btn-outline-success btn-sm text-start">
+                            <i class="fas fa-trophy me-2"></i>Share Achievement
+                        </a>
+                        <a href="{% url 'blog_create' %}" class="btn btn-outline-info btn-sm text-start">
+                            <i class="fas fa-pen me-2"></i>Write Blog Post
+                        </a>
+                        <a href="{% url 'resource_create' %}" class="btn btn-outline-warning btn-sm text-start">
+                            <i class="fas fa-upload me-2"></i>Upload Resource
+                        </a>
+                        <a href="{% url 'group_create' %}" class="btn btn-outline-secondary btn-sm text-start">
+                            <i class="fas fa-users me-2"></i>Create Group
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Welcome Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="bg-gradient-primary text-white rounded-4 p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h2 class="fw-bold mb-2">
+                                    Welcome back, {{ user.get_full_name|default:user.username }}! 👋
+                                </h2>
+                                <p class="mb-0 opacity-90">Ready to continue your journey to success? Let's make today count!</p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <div class="d-inline-block">
+                                    <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                        <i class="fas fa-chart-line fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card dashboard-card bg-gradient-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="fw-bold mb-1">{{ goals_count }}</h3>
+                                    <p class="mb-0 small opacity-90">Total Goals</p>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                    <i class="fas fa-bullseye fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card dashboard-card bg-gradient-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="fw-bold mb-1">{{ achievements_count }}</h3>
+                                    <p class="mb-0 small opacity-90">Achievements</p>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                    <i class="fas fa-trophy fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card dashboard-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="card-body text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="fw-bold mb-1">{{ posts_count }}</h3>
+                                    <p class="mb-0 small opacity-90">Blog Posts</p>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                    <i class="fas fa-blog fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card dashboard-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="card-body text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="fw-bold mb-1">{{ resources_count }}</h3>
+                                    <p class="mb-0 small opacity-90">Resources</p>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                    <i class="fas fa-book fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card dashboard-card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="fw-bold mb-1">{{ books_count }}</h3>
+                                    <p class="mb-0 small opacity-90">Books</p>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                    <i class="fas fa-book fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card dashboard-card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="fw-bold mb-1">7</h3>
+                                    <p class="mb-0 small opacity-90">Day Streak</p>
+                                </div>
+                                <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                    <i class="fas fa-fire fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="row">
+                <!-- Recent Goals -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0">
+                                <i class="fas fa-bullseye text-primary me-2"></i>Recent Goals
+                            </h6>
+                            <a href="{% url 'goal_list' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-arrow-right me-1"></i>View All
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% for goal in recent_goals %}
+                                <div class="d-flex align-items-center mb-3 p-3 bg-light rounded-3">
+                                    <div class="me-3">
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-target text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-medium">{{ goal.title }}</h6>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary">
+                                                {{ goal.get_category_display }}
+                                            </span>
+                                            <small class="text-muted">{{ goal.created_at|date:"M d" }}</small>
+                                        </div>
+                                        <div class="progress mt-2" style="height: 6px;">
+                                            <div class="progress-bar bg-primary" style="width: {{ goal.progress }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ goal.progress }}% complete</small>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-bullseye fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-3">No goals yet. Ready to start your journey?</p>
+                                    <a href="{% url 'goal_create' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-1"></i>Create Your First Goal
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reading Progress -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0">
+                                <i class="fas fa-book text-success me-2"></i>Reading Progress
+                            </h6>
+                            <a href="{% url 'books:book_list' %}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-arrow-right me-1"></i>View All Books
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Your reading progress will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Blog Posts -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card dashboard-card">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0">
+                                <i class="fas fa-blog text-info me-2"></i>Recent Blog Posts
+                            </h6>
+                            <a href="{% url 'my_posts' %}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-arrow-right me-1"></i>View All Posts
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% for post in recent_posts %}
+                                <div class="row align-items-center mb-3 p-3 bg-light rounded-3">
+                                    <div class="col-md-8">
+                                        <h6 class="mb-1 fw-medium">{{ post.title }}</h6>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge bg-info bg-opacity-10 text-info">
+                                                {{ post.get_category_display }}
+                                            </span>
+                                            <small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
+                                            <small class="text-muted">{{ post.reading_time }} min read</small>
+                                        </div>
+                                        {% if post.excerpt %}
+                                            <p class="small text-muted mb-0">{{ post.excerpt|truncatewords:15 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <div class="d-flex align-items-center justify-content-md-end gap-3">
+                                            <div class="text-center">
+                                                <div class="fw-bold text-primary">{{ post.views_count }}</div>
+                                                <small class="text-muted">Views</small>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="fw-bold text-danger">{{ post.likes_count }}</div>
+                                                <small class="text-muted">Likes</small>
+                                            </div>
+                                            <span class="badge bg-{{ post.status }}">
+                                                {{ post.get_status_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-pen fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-3">No blog posts yet. Share your knowledge with the community!</p>
+                                    <a href="{% url 'blog_create' %}" class="btn btn-info">
+                                        <i class="fas fa-plus me-1"></i>Write Your First Post
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

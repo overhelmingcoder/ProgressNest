@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}My Reading List - TrackMyJourney{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-list me-2"></i>My Reading List</h1>
+        <a href="{% url 'books:list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-book me-2"></i>Browse Books
+        </a>
+    </div>
+    
+    <!-- Filter by status -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Reading List -->
+    <div class="row">
+        {% for item in reading_list %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    {% if item.book.cover_image %}
+                        <img src="{{ item.book.cover_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ item.book.get_absolute_url }}" class="text-decoration-none">{{ item.book.title }}</a>
+                        </h5>
+                        <p class="card-text"><strong>Author:</strong> {{ item.book.author }}</p>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-{% if item.status == 'read' %}success{% elif item.status == 'currently_reading' %}primary{% elif item.status == 'want_to_read' %}secondary{% else %}warning{% endif %}">
+                                {{ item.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        {% if item.status == 'currently_reading' and item.progress > 0 %}
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>Progress</small>
+                                    <small>{{ item.progress }}%</small>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: {{ item.progress }}%"></div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if item.notes %}
+                            <p class="card-text small"><strong>Notes:</strong> {{ item.notes|truncatewords:10 }}</p>
+                        {% endif %}
+                        
+                        <small class="text-muted">Added {{ item.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-list fa-4x text-muted mb-3"></i>
+                    <h3>Your Reading List is Empty</h3>
+                    <p class="text-muted">Start building your reading list by browsing our book collection.</p>
+                    <a href="{% url 'books:list' %}" class="btn btn-primary">
+                        <i class="fas fa-book me-2"></i>Browse Books
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

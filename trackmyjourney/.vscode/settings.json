@@ -1,0 +1,22 @@
+{
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "files.associations": {
+        "*.html": "html",
+        "*.css": "css",
+        "*.js": "javascript"
+    },
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/venv": true,
+        "**/.git": true
+    },
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black"
+}

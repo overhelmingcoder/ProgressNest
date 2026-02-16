@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to ProgressNest{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-5">
+                        <i class="fas fa-rocket fa-4x text-primary mb-3"></i>
+                        <h1>Welcome to ProgressNest!</h1>
+                        <p class="lead text-muted">Let's get you started on your journey to success</p>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-flag fa-3x text-primary mb-3"></i>
+                                    <h5>Set Your First Goal</h5>
+                                    <p class="text-muted">Start by creating your first goal to track your progress.</p>
+                                    <a href="{% url 'goals:create' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Create Goal
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user fa-3x text-success mb-3"></i>
+                                    <h5>Complete Your Profile</h5>
+                                    <p class="text-muted">Add more information about yourself to personalize your experience.</p>
+                                    <a href="{% url 'accounts:profile' %}" class="btn btn-success">
+                                        <i class="fas fa-edit me-2"></i>Edit Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-5">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-skip-forward me-2"></i>Skip for Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
